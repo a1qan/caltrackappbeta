@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /auth
+Disallow: /reset-password
+Disallow: /onboarding
+Disallow: /dashboard
+Disallow: /food
+Disallow: /workouts
+Disallow: /scan
+Disallow: /progress
+Disallow: /coach
+Disallow: /achievements
+Disallow: /settings
