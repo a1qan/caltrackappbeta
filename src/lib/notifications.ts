@@ -37,9 +37,8 @@ export interface NotificationPrefs {
     enabled: boolean;
     time: string; // end-of-day reminder if nothing logged
   };
-  goalNudges: {
-    enabled: boolean;
-  };
+  goalNudges: boolean;
+
   quietHours: {
     enabled: boolean;
     start: string; // "HH:MM"
