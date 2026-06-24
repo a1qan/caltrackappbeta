@@ -41,6 +41,25 @@ function AuthenticatedLayout() {
     }
   }, [profileQ.data, pathname, navigate]);
 
+  const foodEntries = useTracking((s) => s.foodEntries);
+  const water = useTracking((s) => s.water);
+  const weights = useTracking((s) => s.weights);
+  const workouts = useTracking((s) => s.workouts);
+
+  const getDayState = useCallback(() => {
+    const today = todayStr();
+    return {
+      loggedFood: foodEntries.some((e) => e.date === today),
+      loggedWater: water.some((w) => w.date === today && w.ml > 0),
+      loggedWeight: weights.some((w) => w.date === today),
+      loggedWorkout: workouts.some((w) => w.date === today),
+    };
+  }, [foodEntries, water, weights, workouts]);
+
+  useNotificationScheduler(user?.id ?? null, getDayState);
+
+
+
   if (loading || profileQ.isLoading) {
     return (
       <div className="min-h-[100svh] grid place-items-center">
