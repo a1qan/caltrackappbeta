@@ -1,9 +1,13 @@
 import { createFileRoute, Outlet, redirect, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { fetchProfile } from "@/lib/profile-api";
 import { BottomNav } from "@/components/bottom-nav";
+import { useTracking } from "@/lib/store";
+import { useNotificationScheduler } from "@/lib/notifications";
+import { todayStr } from "@/lib/calculations";
+
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
