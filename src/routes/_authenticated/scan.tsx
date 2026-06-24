@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Camera, ImagePlus, Loader2, ScanLine, X } from "lucide-react";
 import { PageHeader } from "@/components/mobile-shell";
+import { BarcodeCamera } from "@/components/barcode-camera";
 import { useTracking } from "@/lib/store";
 import { todayStr } from "@/lib/calculations";
 import type { FoodItem, MealType } from "@/lib/types";
@@ -10,6 +11,7 @@ import type { FoodItem, MealType } from "@/lib/types";
 export const Route = createFileRoute("/_authenticated/scan")({
   component: ScanPage,
 });
+
 
 type Mode = "ai" | "barcode";
 
@@ -181,13 +183,13 @@ function BarcodeScan() {
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [item, setItem] = useState<FoodItem | null>(null);
+  const [scanning, setScanning] = useState(false);
   const addEntry = useTracking((s) => s.addFoodEntry);
 
-  async function lookup(e: React.FormEvent) {
-    e.preventDefault();
+  async function fetchCode(raw: string) {
     setBusy(true);
     try {
-      const r = await fetch(`/api/barcode?code=${encodeURIComponent(code.trim())}`);
+      const r = await fetch(`/api/barcode?code=${encodeURIComponent(raw.trim())}`);
       const data = await r.json();
       if (!r.ok) throw new Error(data.error === "not found" ? "No product found for that barcode." : "Lookup failed");
       setItem({ id: crypto.randomUUID(), ...data });
@@ -198,17 +200,30 @@ function BarcodeScan() {
     }
   }
 
+  async function lookup(e: React.FormEvent) {
+    e.preventDefault();
+    await fetchCode(code);
+  }
+
   return (
     <div>
       <div className="rounded-3xl bg-card border border-border p-4 shadow-elevated">
-        <div className="aspect-[4/3] rounded-2xl bg-muted grid place-items-center text-muted-foreground">
+        <button
+          onClick={() => setScanning(true)}
+          className="w-full aspect-[4/3] rounded-2xl bg-muted hover:bg-accent transition-colors grid place-items-center text-foreground border-2 border-dashed border-border"
+        >
           <div className="text-center px-6">
-            <ScanLine className="mx-auto size-10 mb-2" />
-            <p className="text-sm">Type the barcode below — we'll fetch the nutrition info.</p>
-            <p className="text-[11px] mt-2 text-muted-foreground/80">Live camera scan coming soon on supported devices.</p>
+            <ScanLine className="mx-auto size-10 mb-2 text-primary" />
+            <p className="text-sm font-semibold">Tap to scan a barcode</p>
+            <p className="text-[11px] mt-1 text-muted-foreground">Uses your camera · EAN, UPC, QR</p>
           </div>
+        </button>
+
+        <div className="my-3 flex items-center gap-2 text-[11px] uppercase tracking-wider text-muted-foreground">
+          <span className="h-px flex-1 bg-border" /> or enter manually <span className="h-px flex-1 bg-border" />
         </div>
-        <form onSubmit={lookup} className="mt-3 flex gap-2">
+
+        <form onSubmit={lookup} className="flex gap-2">
           <input
             type="text"
             inputMode="numeric"
@@ -228,6 +243,17 @@ function BarcodeScan() {
         </form>
       </div>
 
+      {scanning && (
+        <BarcodeCamera
+          onClose={() => setScanning(false)}
+          onDetected={(c) => {
+            setScanning(false);
+            setCode(c);
+            void fetchCode(c);
+          }}
+        />
+      )}
+
       {item && (
         <ReviewCard
           initial={item}
@@ -242,6 +268,7 @@ function BarcodeScan() {
     </div>
   );
 }
+
 
 function ReviewCard({
   initial, onSave, confidence, notes,

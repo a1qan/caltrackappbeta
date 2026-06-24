@@ -117,7 +117,8 @@ function CoachPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-md min-h-[100svh] flex flex-col px-4 pt-[max(env(safe-area-inset-top),1rem)] pb-[120px]">
+    <div className="mx-auto w-full max-w-md min-h-[100svh] flex flex-col px-4 pt-[max(env(safe-area-inset-top),1rem)] pb-[calc(env(safe-area-inset-bottom)+200px)]">
+
       <PageHeader
         title="CalCoach"
         trailing={
@@ -177,8 +178,9 @@ function CoachPage() {
 
       <form
         onSubmit={(e) => { e.preventDefault(); submit(); }}
-        className="fixed bottom-[max(env(safe-area-inset-bottom),0.5rem)] inset-x-0 z-30 px-4"
+        className="fixed bottom-[calc(env(safe-area-inset-bottom)+88px)] inset-x-0 z-30 px-4"
       >
+
         <div className="mx-auto max-w-md glass rounded-3xl shadow-elevated p-1.5 flex items-end gap-1.5">
           <textarea
             ref={taRef}

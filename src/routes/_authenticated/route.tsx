@@ -1,9 +1,13 @@
 import { createFileRoute, Outlet, redirect, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { fetchProfile } from "@/lib/profile-api";
 import { BottomNav } from "@/components/bottom-nav";
+import { useTracking } from "@/lib/store";
+import { useNotificationScheduler } from "@/lib/notifications";
+import { todayStr } from "@/lib/calculations";
+
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -36,6 +40,25 @@ function AuthenticatedLayout() {
       navigate({ to: "/onboarding", replace: true });
     }
   }, [profileQ.data, pathname, navigate]);
+
+  const foodEntries = useTracking((s) => s.foodEntries);
+  const water = useTracking((s) => s.water);
+  const weights = useTracking((s) => s.weights);
+  const workouts = useTracking((s) => s.workouts);
+
+  const getDayState = useCallback(() => {
+    const today = todayStr();
+    return {
+      loggedFood: foodEntries.some((e) => e.date === today),
+      loggedWater: water.some((w) => w.date === today && w.ml > 0),
+      loggedWeight: weights.some((w) => w.date === today),
+      loggedWorkout: workouts.some((w) => w.date === today),
+    };
+  }, [foodEntries, water, weights, workouts]);
+
+  useNotificationScheduler(user?.id ?? null, getDayState);
+
+
 
   if (loading || profileQ.isLoading) {
     return (
