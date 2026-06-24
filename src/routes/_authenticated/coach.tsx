@@ -178,8 +178,9 @@ function CoachPage() {
 
       <form
         onSubmit={(e) => { e.preventDefault(); submit(); }}
-        className="fixed bottom-[max(env(safe-area-inset-bottom),0.5rem)] inset-x-0 z-30 px-4"
+        className="fixed bottom-[calc(env(safe-area-inset-bottom)+88px)] inset-x-0 z-30 px-4"
       >
+
         <div className="mx-auto max-w-md glass rounded-3xl shadow-elevated p-1.5 flex items-end gap-1.5">
           <textarea
             ref={taRef}
