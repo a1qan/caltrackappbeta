@@ -69,12 +69,14 @@ function SettingsPage() {
           value={theme === "dark" ? "Dark" : "Light"}
           onClick={toggle}
         />
-        <Row
-          icon={<Bell className="size-4" />}
-          label="Notifications"
-          value="Coming soon"
-          onClick={() => toast("Notifications coming soon")}
-        />
+        <Link to="/notifications" className="block">
+          <Row
+            icon={<Bell className="size-4" />}
+            label="Notifications"
+            value="Reminders, hydration, weigh-in & more"
+          />
+        </Link>
+
       </section>
 
       <section className="mt-4 rounded-3xl bg-card border border-border shadow-elevated overflow-hidden">
