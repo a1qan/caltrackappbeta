@@ -60,7 +60,7 @@ export const DEFAULT_PREFS: NotificationPrefs = {
   weighIn: { enabled: true, time: "07:30", days: [1] }, // Mondays
   workout: { enabled: false, time: "17:30", days: [1, 3, 5] },
   streak: { enabled: true, time: "21:30" },
-  goalNudges: { enabled: true },
+  goalNudges: true,
   quietHours: { enabled: true, start: "22:00", end: "07:00" },
   sound: true,
   vibrate: true,
