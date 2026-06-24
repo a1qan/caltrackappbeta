@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Camera, ImagePlus, Loader2, ScanLine, X } from "lucide-react";
 import { PageHeader } from "@/components/mobile-shell";
+import { BarcodeCamera } from "@/components/barcode-camera";
 import { useTracking } from "@/lib/store";
 import { todayStr } from "@/lib/calculations";
 import type { FoodItem, MealType } from "@/lib/types";
@@ -10,6 +11,7 @@ import type { FoodItem, MealType } from "@/lib/types";
 export const Route = createFileRoute("/_authenticated/scan")({
   component: ScanPage,
 });
+
 
 type Mode = "ai" | "barcode";
 
