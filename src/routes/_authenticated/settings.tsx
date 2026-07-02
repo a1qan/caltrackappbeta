@@ -2,10 +2,9 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Award, Bell, ChevronRight, LogOut, Moon, Shield, Sun, Target, Trash2, User } from "lucide-react";
+import { Award, Bell, ChevronRight, LogOut, Shield, Target, Trash2, User } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { fetchProfile, upsertProfile } from "@/lib/profile-api";
-import { useTheme } from "@/lib/theme";
 import { calcTargets } from "@/lib/calculations";
 import { PageHeader } from "@/components/mobile-shell";
 
@@ -16,7 +15,6 @@ export const Route = createFileRoute("/_authenticated/settings")({
 function SettingsPage() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const { theme, toggle } = useTheme();
   const qc = useQueryClient();
   const profileQ = useQuery({
     queryKey: ["profile", user?.id],
@@ -62,12 +60,6 @@ function SettingsPage() {
           label="Profile"
           value={p ? `${p.age} yr · ${p.height_cm} cm · ${p.weight_kg} kg` : "Set up"}
           onClick={() => setEditingProfile(true)}
-        />
-        <Row
-          icon={theme === "dark" ? <Moon className="size-4" /> : <Sun className="size-4" />}
-          label="Theme"
-          value={theme === "dark" ? "Dark" : "Light"}
-          onClick={toggle}
         />
         <Link to="/notifications" className="block">
           <Row

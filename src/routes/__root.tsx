@@ -83,7 +83,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <head>
         <HeadContent />
       </head>
@@ -104,7 +104,7 @@ function RootComponent() {
           <Outlet />
           <Toaster
             position="top-center"
-            theme="system"
+            theme="dark"
             toastOptions={{ className: "rounded-2xl" }}
           />
         </AuthProvider>

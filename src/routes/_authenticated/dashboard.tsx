@@ -1,13 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { Droplet, Flame, Plus, Camera, Dumbbell, TrendingUp, Award } from "lucide-react";
+import { Droplet, Flame, Plus, Dumbbell, TrendingUp, ChevronRight, MessageCircle } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { fetchProfile } from "@/lib/profile-api";
 import { useTracking, calcStreak } from "@/lib/store";
 import { ProgressRing } from "@/components/progress-ring";
-import { MacroBar } from "@/components/macro-bar";
 import { todayStr } from "@/lib/calculations";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
@@ -66,173 +66,190 @@ function Dashboard() {
     return "Good evening";
   }, []);
 
+  const dateStr = useMemo(
+    () => new Date().toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" }),
+    [],
+  );
+
+  const initial = (profile?.display_name?.[0] ?? user?.email?.[0] ?? "?").toUpperCase();
+
   return (
-    <div className="mx-auto w-full max-w-md px-4 pt-[max(env(safe-area-inset-top),1rem)] pb-32">
-      <header className="flex items-center justify-between mb-5">
+    <div className="mx-auto w-full max-w-md px-5 pt-[max(env(safe-area-inset-top),1.25rem)] pb-32">
+      {/* Header */}
+      <header className="mb-6 flex items-center justify-between">
         <div className="min-w-0">
-          <p className="text-xs text-muted-foreground">{greeting},</p>
-          <h1 className="text-2xl font-semibold tracking-tight truncate">
-            {profile?.display_name ?? "Friend"} 👋
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">{dateStr}</p>
+          <h1 className="mt-0.5 text-[22px] font-bold tracking-tight truncate">
+            {greeting}, {profile?.display_name?.split(" ")[0] ?? "Friend"}
           </h1>
         </div>
-        <div className="flex items-center gap-2">
-          <StreakBadge streak={streak} />
+        <div className="flex shrink-0 items-center gap-2">
+          <Link
+            to="/achievements"
+            className="inline-flex items-center gap-1 rounded-full bg-card border border-border px-2.5 py-1.5"
+          >
+            <Flame className="size-3.5 text-warning" />
+            <span className="text-xs font-bold tabular-nums">{streak}</span>
+          </Link>
+          <Link
+            to="/settings"
+            aria-label="Profile & settings"
+            className="grid size-10 place-items-center rounded-full bg-card border border-border text-sm font-bold text-primary"
+          >
+            {initial}
+          </Link>
         </div>
       </header>
 
-      {/* Main calorie ring */}
-      <section className="rounded-3xl bg-card border border-border p-5 shadow-elevated animate-slide-up">
-        <div className="flex items-center justify-between mb-3">
-          <div>
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">Today</p>
-            <p className="text-sm font-semibold">{Math.round(totals.cal)} / {calTarget} kcal</p>
-          </div>
-          <Link
-            to="/food"
-            className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary"
-          >
-            <Plus className="size-3.5" /> Log
-          </Link>
-        </div>
-
-        <div className="flex flex-col items-center py-2">
-          <ProgressRing value={totals.cal} max={calTarget} size={210} stroke={16}>
+      {/* Calorie ring + macros */}
+      <section className="rounded-3xl bg-card p-6 animate-slide-up">
+        <div className="flex flex-col items-center">
+          <ProgressRing value={totals.cal} max={calTarget} size={188} stroke={11}>
             <div className="text-center">
-              <div className="text-4xl font-semibold tabular-nums">{remaining}</div>
-              <div className="text-xs text-muted-foreground mt-1">kcal remaining</div>
+              <div className="text-[40px] leading-none font-bold tabular-nums">{Math.round(remaining)}</div>
+              <div className="mt-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                kcal left
+              </div>
             </div>
           </ProgressRing>
+          <p className="mt-3 text-xs text-muted-foreground tabular-nums">
+            {Math.round(totals.cal)} eaten · goal {calTarget}
+          </p>
         </div>
 
-        <div className="mt-4 grid grid-cols-1 gap-3">
-          <MacroBar label="Protein" value={totals.p} target={profile?.protein_g ?? 150} color="protein" />
-          <MacroBar label="Carbs" value={totals.c} target={profile?.carbs_g ?? 220} color="carbs" />
-          <MacroBar label="Fat" value={totals.f} target={profile?.fat_g ?? 70} color="fat" />
+        <div className="mt-5 grid grid-cols-3 gap-4 border-t border-border pt-4">
+          <MacroMini label="Protein" value={totals.p} target={profile?.protein_g ?? 150} barClass="bg-primary" />
+          <MacroMini label="Carbs" value={totals.c} target={profile?.carbs_g ?? 220} barClass="bg-[var(--color-carbs)]" />
+          <MacroMini label="Fat" value={totals.f} target={profile?.fat_g ?? 70} barClass="bg-[var(--color-fat)]" />
         </div>
       </section>
 
-      <section className="mt-4 grid grid-cols-2 gap-3">
-        <QuickAction to="/scan" icon={<Camera className="size-5" />} title="Scan meal" sub="AI photo" />
-        <QuickAction to="/workouts" icon={<Dumbbell className="size-5" />} title="Workout" sub="Log training" />
-      </section>
-
-      <section className="mt-4 grid grid-cols-2 gap-3">
-        <div className="rounded-3xl bg-card border border-border p-4 shadow-elevated">
-          <div className="flex items-center gap-2">
-            <div className="grid size-8 place-items-center rounded-xl bg-[var(--color-fat)]/10 text-[var(--color-fat)]">
-              <Droplet className="size-4" />
-            </div>
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">Water</p>
+      {/* Stat rows */}
+      <section className="mt-4 space-y-2.5">
+        <div className="flex items-center gap-3 rounded-2xl bg-card p-4">
+          <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+            <Droplet className="size-4.5" />
           </div>
-          <p className="mt-2 text-2xl font-semibold tabular-nums">
-            {(todayWater / 1000).toFixed(1)}
-            <span className="ml-1 text-sm font-normal text-muted-foreground">/ {waterTarget / 1000}L</span>
-          </p>
-          <div className="mt-2 h-1.5 rounded-full bg-muted overflow-hidden">
-            <div className="h-full bg-[var(--color-fat)] transition-all duration-700" style={{ width: `${Math.min(100, (todayWater / waterTarget) * 100)}%` }} />
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Water</p>
+            <p className="text-sm font-bold tabular-nums">
+              {(todayWater / 1000).toFixed(1)}L
+              <span className="font-medium text-muted-foreground"> / {waterTarget / 1000}L</span>
+            </p>
           </div>
-          <div className="mt-3 flex gap-2">
-            {[250, 500].map((ml) => (
-              <button
-                key={ml}
-                onClick={() => addWater(today, ml)}
-                className="flex-1 rounded-full bg-muted hover:bg-accent text-xs font-medium py-2 transition-colors"
-              >
-                +{ml}ml
-              </button>
-            ))}
-          </div>
+          <button
+            onClick={() => addWater(today, 250)}
+            aria-label="Add 250 ml of water"
+            className="press-scale grid size-9 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground"
+          >
+            <Plus className="size-4" strokeWidth={2.6} />
+          </button>
         </div>
 
-        <Link to="/progress" className="rounded-3xl bg-card border border-border p-4 shadow-elevated block">
-          <div className="flex items-center gap-2">
-            <div className="grid size-8 place-items-center rounded-xl bg-success/10 text-success">
-              <TrendingUp className="size-4" />
-            </div>
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">Weight</p>
+        <Link to="/workouts" className="flex items-center gap-3 rounded-2xl bg-card p-4 press-scale">
+          <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+            <Dumbbell className="size-4.5" />
           </div>
-          <p className="mt-2 text-2xl font-semibold tabular-nums">
-            {latestWeight ? `${latestWeight}` : "—"}
-            <span className="ml-1 text-sm font-normal text-muted-foreground">kg</span>
-          </p>
-          <p className="mt-2 text-xs text-muted-foreground">
-            {weightDelta === 0 ? "No change yet" : weightDelta > 0 ? `▲ ${weightDelta} kg total` : `▼ ${Math.abs(weightDelta)} kg total`}
-          </p>
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Training</p>
+            <p className="text-sm font-bold tabular-nums">
+              {workoutsToday}
+              <span className="font-medium text-muted-foreground"> logged today</span>
+            </p>
+          </div>
+          <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+        </Link>
+
+        <Link to="/progress" className="flex items-center gap-3 rounded-2xl bg-card p-4 press-scale">
+          <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+            <TrendingUp className="size-4.5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Weight</p>
+            <p className="text-sm font-bold tabular-nums">
+              {latestWeight ? `${latestWeight} kg` : "—"}
+            </p>
+          </div>
+          {weightDelta !== 0 && (
+            <span className="shrink-0 rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-bold tabular-nums text-primary">
+              {weightDelta > 0 ? "+" : ""}{weightDelta} kg
+            </span>
+          )}
+          <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
         </Link>
       </section>
 
-      <section className="mt-4 grid grid-cols-2 gap-3">
-        <div className="rounded-3xl bg-card border border-border p-4 shadow-elevated">
-          <div className="flex items-center gap-2">
-            <div className="grid size-8 place-items-center rounded-xl bg-primary/10 text-primary">
-              <Dumbbell className="size-4" />
-            </div>
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">Workouts</p>
+      {/* CalCoach prompt */}
+      <Link to="/coach" className="mt-4 block rounded-2xl bg-gradient-to-r from-primary/60 to-border p-px press-scale">
+        <div className="flex items-center gap-3 rounded-[calc(1rem-1px)] bg-background p-4">
+          <div className="grid size-9 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground">
+            <MessageCircle className="size-4" />
           </div>
-          <p className="mt-2 text-2xl font-semibold tabular-nums">{workoutsToday}</p>
-          <p className="mt-1 text-xs text-muted-foreground">logged today</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-primary">CalCoach</p>
+            <p className="truncate text-xs text-muted-foreground">Meal ideas, training tweaks & motivation.</p>
+          </div>
+          <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
         </div>
-        <Link to="/achievements" className="rounded-3xl bg-card border border-border p-4 shadow-elevated block">
-          <div className="flex items-center gap-2">
-            <div className="grid size-8 place-items-center rounded-xl bg-warning/15 text-warning">
-              <Award className="size-4" />
-            </div>
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">Streak</p>
-          </div>
-          <p className="mt-2 text-2xl font-semibold tabular-nums">{streak}</p>
-          <p className="mt-1 text-xs text-muted-foreground">day{streak === 1 ? "" : "s"} in a row</p>
-        </Link>
-      </section>
+      </Link>
 
-      <section className="mt-4 rounded-3xl bg-card border border-border p-4 shadow-elevated">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold">Today's meals</h3>
-          <Link to="/food" className="text-xs text-primary font-medium">See all</Link>
+      {/* Today's meals */}
+      <section className="mt-6">
+        <div className="mb-2.5 flex items-center justify-between px-1">
+          <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Today's meals</h3>
+          <Link to="/food" className="text-xs font-semibold text-primary">See all</Link>
         </div>
-        {todaysEntries.length === 0 ? (
-          <div className="py-6 text-center text-sm text-muted-foreground">
-            Nothing logged yet. Tap <span className="text-primary font-medium">Log</span> above to start.
-          </div>
-        ) : (
-          <ul className="divide-y divide-border">
-            {todaysEntries.slice(-4).reverse().map((e) => (
-              <li key={e.id} className="py-2.5 flex items-center justify-between">
-                <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">{e.food.name}</p>
-                  <p className="text-xs text-muted-foreground capitalize">{e.meal} · {e.servings}× {e.food.serving_label}</p>
-                </div>
-                <span className="text-sm tabular-nums font-medium">{Math.round(e.food.calories * e.servings)} kcal</span>
-              </li>
-            ))}
-          </ul>
-        )}
+        <div className="rounded-2xl bg-card px-4">
+          {todaysEntries.length === 0 ? (
+            <div className="py-8 text-center text-sm text-muted-foreground">
+              Nothing logged yet. Tap <span className="font-semibold text-primary">+</span> to start.
+            </div>
+          ) : (
+            <ul className="divide-y divide-border">
+              {todaysEntries.slice(-4).reverse().map((e) => (
+                <li key={e.id} className="flex items-center justify-between py-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold">{e.food.name}</p>
+                    <p className="text-xs text-muted-foreground capitalize">
+                      {e.meal} · {e.servings}× {e.food.serving_label}
+                    </p>
+                  </div>
+                  <span className="shrink-0 pl-3 text-sm font-bold tabular-nums">
+                    {Math.round(e.food.calories * e.servings)}
+                    <span className="ml-1 text-[10px] font-medium text-muted-foreground">kcal</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </section>
     </div>
   );
 }
 
-function QuickAction({ to, icon, title, sub }: { to: "/scan" | "/workouts"; icon: React.ReactNode; title: string; sub: string }) {
+function MacroMini({
+  label,
+  value,
+  target,
+  barClass,
+}: {
+  label: string;
+  value: number;
+  target: number;
+  barClass: string;
+}) {
+  const pct = Math.max(0, Math.min(100, (value / Math.max(1, target)) * 100));
   return (
-    <Link
-      to={to}
-      className="rounded-3xl gradient-primary text-primary-foreground p-4 shadow-glow flex items-center gap-3"
-    >
-      <div className="grid size-10 place-items-center rounded-xl bg-white/15 backdrop-blur">
-        {icon}
+    <div className="flex flex-col items-center">
+      <span className="text-sm font-bold tabular-nums">
+        {Math.round(value)}
+        <span className="text-[10px] font-medium text-muted-foreground">/{target}g</span>
+      </span>
+      <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-background">
+        <div className={cn("h-full rounded-full transition-all duration-700 ease-out", barClass)} style={{ width: `${pct}%` }} />
       </div>
-      <div>
-        <p className="text-sm font-semibold">{title}</p>
-        <p className="text-xs opacity-90">{sub}</p>
-      </div>
-    </Link>
-  );
-}
-
-function StreakBadge({ streak }: { streak: number }) {
-  return (
-    <div className="inline-flex items-center gap-1 rounded-full bg-warning/15 text-warning px-3 py-1.5">
-      <Flame className="size-3.5" />
-      <span className="text-xs font-semibold tabular-nums">{streak}</span>
+      <span className="mt-2 text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground">{label}</span>
     </div>
   );
 }
