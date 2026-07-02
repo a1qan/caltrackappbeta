@@ -1,45 +1,61 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, UtensilsCrossed, Dumbbell, MessageCircle, User } from "lucide-react";
+import { Home, UtensilsCrossed, Dumbbell, MessageCircle, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const items = [
+const leftItems = [
   { to: "/dashboard", label: "Home", Icon: Home },
   { to: "/food", label: "Food", Icon: UtensilsCrossed },
+] as const;
+
+const rightItems = [
   { to: "/workouts", label: "Train", Icon: Dumbbell },
   { to: "/coach", label: "Coach", Icon: MessageCircle },
-  { to: "/settings", label: "You", Icon: User },
 ] as const;
+
+function Tab({
+  to,
+  label,
+  Icon,
+  active,
+}: {
+  to: string;
+  label: string;
+  Icon: typeof Home;
+  active: boolean;
+}) {
+  return (
+    <Link
+      to={to}
+      className={cn(
+        "flex flex-col items-center justify-center gap-1 px-3 py-1 press-scale",
+        active ? "text-primary" : "text-muted-foreground",
+      )}
+    >
+      <Icon className="size-[22px]" strokeWidth={active ? 2.4 : 2} />
+      <span className="text-[9px] font-bold uppercase tracking-wider">{label}</span>
+    </Link>
+  );
+}
 
 export function BottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isActive = (to: string) => pathname === to || pathname.startsWith(to + "/");
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-40 pb-[env(safe-area-inset-bottom)]">
-      <div className="mx-auto max-w-md px-4 pb-3">
-        <div className="glass rounded-3xl shadow-elevated flex items-center justify-around px-2 py-2">
-          {items.map(({ to, label, Icon }) => {
-            const active = pathname === to || pathname.startsWith(to + "/");
-            return (
-              <Link
-                key={to}
-                to={to}
-                className={cn(
-                  "flex flex-col items-center justify-center gap-0.5 rounded-2xl px-3 py-1.5 transition-all duration-200",
-                  active ? "text-primary scale-105" : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                <div
-                  className={cn(
-                    "grid place-items-center transition-all",
-                    active ? "size-9 rounded-xl bg-primary/10" : "size-9",
-                  )}
-                >
-                  <Icon className="size-[18px]" strokeWidth={active ? 2.4 : 2} />
-                </div>
-                <span className={cn("text-[10px] font-medium", active && "font-semibold")}>{label}</span>
-              </Link>
-            );
-          })}
-        </div>
+    <nav className="fixed bottom-0 inset-x-0 z-40 border-t border-border bg-card/85 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-md items-center justify-between px-6 pt-2 pb-[max(env(safe-area-inset-bottom),0.75rem)]">
+        {leftItems.map((it) => (
+          <Tab key={it.to} {...it} active={isActive(it.to)} />
+        ))}
+        <Link
+          to="/scan"
+          aria-label="Quick log — scan a meal or barcode"
+          className="press-scale -mt-9 grid size-14 shrink-0 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-glow border-4 border-background"
+        >
+          <Plus className="size-6" strokeWidth={2.6} />
+        </Link>
+        {rightItems.map((it) => (
+          <Tab key={it.to} {...it} active={isActive(it.to)} />
+        ))}
       </div>
     </nav>
   );
