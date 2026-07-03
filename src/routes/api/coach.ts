@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { convertToModelMessages, streamText, type UIMessage } from "ai";
-import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
+import { resolveChatModel } from "@/lib/ai-gateway.server";
 
 type Body = {
   messages?: unknown;
@@ -29,8 +29,8 @@ export const Route = createFileRoute("/api/coach")({
         if (!Array.isArray(body.messages)) {
           return new Response("messages required", { status: 400 });
         }
-        const key = process.env.LOVABLE_API_KEY;
-        if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
+        const model = resolveChatModel();
+        if (!model) return new Response("No AI provider configured", { status: 500 });
 
         const p = body.profile;
         const s = body.todaySummary;
@@ -48,9 +48,8 @@ export const Route = createFileRoute("/api/coach")({
           .filter(Boolean)
           .join("\n");
 
-        const gateway = createLovableAiGatewayProvider(key);
         const result = streamText({
-          model: gateway("google/gemini-3-flash-preview"),
+          model,
           system,
           messages: await convertToModelMessages(body.messages as UIMessage[]),
         });

@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { resolveChatEndpoint } from "@/lib/ai-gateway.server";
 
 type Body = { imageDataUrl?: string; note?: string };
 
@@ -10,8 +11,8 @@ export const Route = createFileRoute("/api/meal-scan")({
         if (!body.imageDataUrl) {
           return Response.json({ error: "imageDataUrl required" }, { status: 400 });
         }
-        const key = process.env.LOVABLE_API_KEY;
-        if (!key) return Response.json({ error: "Missing LOVABLE_API_KEY" }, { status: 500 });
+        const endpoint = resolveChatEndpoint();
+        if (!endpoint) return Response.json({ error: "No AI provider configured" }, { status: 500 });
 
         const prompt = `You are a nutrition vision assistant. Look at the image of a meal and ESTIMATE the contents. ${
           body.note ? `User note: ${body.note}. ` : ""
@@ -19,14 +20,14 @@ export const Route = createFileRoute("/api/meal-scan")({
 {"name": string, "portion": string, "calories": number, "protein_g": number, "carbs_g": number, "fat_g": number, "confidence": "low"|"medium"|"high", "notes": string}
 Numbers must be plain integers or one-decimal numbers. Do not include any other text.`;
 
-        const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        const res = await fetch(endpoint.url, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Lovable-API-Key": key,
+            ...endpoint.headers,
           },
           body: JSON.stringify({
-            model: "google/gemini-3-flash-preview",
+            model: endpoint.model,
             messages: [
               {
                 role: "user",
