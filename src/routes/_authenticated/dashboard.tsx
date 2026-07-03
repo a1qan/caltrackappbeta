@@ -180,8 +180,8 @@ function Dashboard() {
       </section>
 
       {/* CalCoach prompt */}
-      <Link to="/coach" className="mt-4 block rounded-2xl bg-gradient-to-r from-primary/60 to-border p-px press-scale">
-        <div className="flex items-center gap-3 rounded-[calc(1rem-1px)] bg-background p-4">
+      <Link to="/coach" className="mt-4 block rounded-2xl border border-border bg-card p-4 press-scale">
+        <div className="flex items-center gap-3">
           <div className="grid size-9 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground">
             <MessageCircle className="size-4" />
           </div>
