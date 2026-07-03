@@ -54,15 +54,14 @@
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
 
-  --shadow-elevated:
-    0 1px 2px rgb(0 0 0 / 0.25), 0 8px 24px -8px rgb(0 0 0 / 0.35);
-  --shadow-glow:
-    0 0 20px rgb(59 130 246 / 0.35);
+  /* Flat design: barely-there shadows, no glows */
+  --shadow-elevated: 0 1px 2px rgb(0 0 0 / 0.18);
+  --shadow-glow: 0 1px 2px rgb(0 0 0 / 0.18);
 }
 
-/* Midnight Focus — dark-first, single blue accent */
+/* Midnight Focus — dark-first, flat, single blue accent */
 :root {
-  --radius: 1.25rem;
+  --radius: 1rem;
   --background: #0a0f1e;
   --foreground: #e8edf3;
   --card: #141b2e;
@@ -88,7 +87,7 @@
   --warning: #fbbf24;
   --warning-foreground: #0a0f1e;
 
-  --border: rgb(232 237 243 / 0.08);
+  --border: rgb(232 237 243 / 0.1);
   --input: rgb(232 237 243 / 0.12);
   --ring: #3b82f6;
 
@@ -124,24 +123,44 @@
   body {
     overscroll-behavior-y: none;
   }
+
+  /* Smooth micro-interactions everywhere */
+  a, button, [role="button"], input, select, textarea, summary {
+    transition:
+      color 0.18s ease,
+      background-color 0.18s ease,
+      border-color 0.18s ease,
+      opacity 0.18s ease,
+      box-shadow 0.18s ease,
+      transform 0.18s ease;
+  }
+
+  button:active, a:active, [role="button"]:active {
+    transform: scale(0.98);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }
 
+/* Flat card — kept as "glass" so existing markup stays valid */
 @utility glass {
-  background: color-mix(in oklch, var(--card) 80%, transparent);
-  backdrop-filter: blur(20px) saturate(150%);
-  -webkit-backdrop-filter: blur(20px) saturate(150%);
-  border: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
+  background: var(--card);
+  border: 1px solid var(--border);
 }
 
+/* Flat solid accent — no gradients */
 @utility gradient-primary {
-  background-image: linear-gradient(135deg, var(--primary), var(--primary-glow));
+  background-color: var(--primary);
 }
 
 @utility text-gradient {
-  background-image: linear-gradient(135deg, var(--primary), var(--primary-glow));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--primary);
 }
 
 @utility press-scale {
@@ -152,20 +171,36 @@
 }
 
 @keyframes pop-in {
-  0% { transform: scale(0.6); opacity: 0; }
-  60% { transform: scale(1.08); opacity: 1; }
+  0% { transform: scale(0.85); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
 }
 @utility animate-pop-in {
-  animation: pop-in 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: pop-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @keyframes slide-up {
-  from { transform: translateY(12px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: none; opacity: 1; }
 }
 @utility animate-slide-up {
   animation: slide-up 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes fade-soft {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Staggered page entrance — opacity only, safe around fixed children */
+@utility stagger-in {
+  & > * { animation: fade-soft 0.4s ease both; }
+  & > *:nth-child(1) { animation-delay: 0s; }
+  & > *:nth-child(2) { animation-delay: 0.05s; }
+  & > *:nth-child(3) { animation-delay: 0.1s; }
+  & > *:nth-child(4) { animation-delay: 0.15s; }
+  & > *:nth-child(5) { animation-delay: 0.2s; }
+  & > *:nth-child(6) { animation-delay: 0.25s; }
+  & > *:nth-child(n+7) { animation-delay: 0.3s; }
 }
 
 @keyframes shimmer {

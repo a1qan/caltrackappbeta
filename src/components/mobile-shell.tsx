@@ -12,7 +12,7 @@ export function MobileShell({ children, className, ...rest }: HTMLAttributes<HTM
   return (
     <div
       className={cn(
-        "mx-auto w-full max-w-md min-h-[100svh] pb-32 px-4",
+        "mx-auto w-full max-w-md min-h-[100svh] pb-32 px-4 stagger-in",
         "pt-[max(env(safe-area-inset-top),1rem)]",
         className,
       )}
