@@ -1,7 +1,9 @@
 import { createStart, createMiddleware } from "@tanstack/react-start";
 
 import { renderErrorPage } from "./lib/error-page";
-import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
+// Intentionally replaces the generated attachSupabaseAuth: this project uses the
+// user's own Supabase project (src/lib/supabase.ts), not the built-in backend.
+import { supabase } from "@/lib/supabase";
 
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {
@@ -18,7 +20,17 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
   }
 });
 
+const attachOwnSupabaseAuth = createMiddleware({ type: "function" }).client(
+  async ({ next }) => {
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+    return next({
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+  },
+);
+
 export const startInstance = createStart(() => ({
-  functionMiddleware: [attachSupabaseAuth],
+  functionMiddleware: [attachOwnSupabaseAuth],
   requestMiddleware: [errorMiddleware],
 }));
