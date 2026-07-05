@@ -2,8 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
+import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 import logo from "@/assets/caltrack-logo.png";
 import { Loader2, Mail, Lock, Eye, EyeOff } from "lucide-react";
@@ -66,23 +65,21 @@ function AuthPage() {
   async function google() {
     setBusy(true);
     try {
-      if (window.location.hostname.endsWith(".vercel.app")) {
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: "google",
-          options: {
-            redirectTo: window.location.origin,
-            queryParams: { prompt: "select_account" },
-          },
-        });
-        if (error) throw error;
-        return;
-      }
-
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+      // Google refuses to load inside an iframe (like the Lovable preview),
+      // so open the OAuth flow in a new tab there; session syncs back automatically.
+      const inIframe = typeof window !== "undefined" && window.self !== window.top;
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: window.location.origin,
+          queryParams: { prompt: "select_account" },
+          skipBrowserRedirect: inIframe,
+        },
       });
-      if (result.error) {
-        toast.error(result.error instanceof Error ? result.error.message : "Google sign-in failed");
+      if (error) throw error;
+      if (inIframe && data?.url) {
+        window.open(data.url, "_blank");
+        toast.info("Finish signing in with Google in the new tab.");
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Google sign-in failed");

@@ -12,7 +12,7 @@ import { todayStr } from "@/lib/calculations";
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async () => {
-    const { supabase } = await import("@/integrations/supabase/client");
+    const { supabase } = await import("@/lib/supabase");
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) throw redirect({ to: "/auth" });
     return { userId: data.user.id };

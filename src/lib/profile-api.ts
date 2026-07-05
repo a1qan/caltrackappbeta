@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import type { Profile } from "./types";
 
 export async function fetchProfile(userId: string): Promise<Profile | null> {
