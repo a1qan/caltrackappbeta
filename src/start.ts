@@ -4,6 +4,7 @@ import { renderErrorPage } from "./lib/error-page";
 // Intentionally replaces the generated attachSupabaseAuth: this project uses the
 // user's own Supabase project (src/lib/supabase.ts), not the built-in backend.
 import { supabase } from "@/lib/supabase";
+import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {
@@ -31,6 +32,6 @@ const attachOwnSupabaseAuth = createMiddleware({ type: "function" }).client(
 );
 
 export const startInstance = createStart(() => ({
-  functionMiddleware: [attachOwnSupabaseAuth],
+  functionMiddleware: [attachSupabaseAuth, attachOwnSupabaseAuth],
   requestMiddleware: [errorMiddleware],
 }));
