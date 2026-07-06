@@ -52,9 +52,16 @@ export const Route = createFileRoute("/api/coach")({
           model,
           system,
           messages: await convertToModelMessages(body.messages as UIMessage[]),
+          onError: ({ error }) => {
+            console.error("[coach streamText error]", error);
+          },
         });
         return result.toUIMessageStreamResponse({
           originalMessages: body.messages as UIMessage[],
+          onError: (error) => {
+            console.error("[coach stream response error]", error);
+            return error instanceof Error ? error.message : "AI request failed";
+          },
         });
       },
     },

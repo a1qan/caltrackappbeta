@@ -4,6 +4,7 @@ import { DefaultChatTransport, type UIMessage } from "ai";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Send, Sparkles, Loader2, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { fetchProfile } from "@/lib/profile-api";
 import { useTracking, calcStreak } from "@/lib/store";
@@ -79,7 +80,10 @@ function CoachPage() {
     id: "coach",
     messages: initialMessages,
     transport,
-    onError: (err) => console.error(err),
+    onError: (err) => {
+      console.error("[coach]", err);
+      toast.error(err?.message || "CalCoach failed to respond. Check your connection and try again.");
+    },
   });
 
   // persist
