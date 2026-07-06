@@ -80,7 +80,10 @@ function CoachPage() {
     id: "coach",
     messages: initialMessages,
     transport,
-    onError: (err) => console.error(err),
+    onError: (err) => {
+      console.error("[coach]", err);
+      toast.error(err?.message || "CalCoach failed to respond. Check your connection and try again.");
+    },
   });
 
   // persist
