@@ -399,3 +399,32 @@ function NumField({ label, v, on }: { label: string; v: number; on: (v: number) 
     </label>
   );
 }
+
+function Per({ label, v }: { label: string; v: number }) {
+  return (
+    <div>
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="text-sm font-semibold tabular-nums">{v}</div>
+    </div>
+  );
+}
+
+function Badge({ label, tone }: { label: string; tone: "good" | "warn" | "bad" | "neutral" }) {
+  const cls =
+    tone === "good"
+      ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+      : tone === "warn"
+        ? "bg-amber-500/15 text-amber-400 border-amber-500/30"
+        : tone === "bad"
+          ? "bg-rose-500/15 text-rose-400 border-rose-500/30"
+          : "bg-muted text-muted-foreground border-border";
+  return <span className={`inline-flex items-center px-2 py-0.5 rounded-full border text-[10px] font-medium ${cls}`}>{label}</span>;
+}
+
+function scoreTone(grade: string): "good" | "warn" | "bad" | "neutral" {
+  const g = grade.toLowerCase();
+  if (g === "a" || g === "b") return "good";
+  if (g === "c") return "warn";
+  if (g === "d" || g === "e") return "bad";
+  return "neutral";
+}
