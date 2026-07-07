@@ -293,6 +293,65 @@ function ReviewCard({
     <div className="mt-4 rounded-3xl bg-card border border-border p-4 shadow-elevated animate-slide-up">
       <h3 className="text-sm font-semibold">Review & save</h3>
       {confidence && <p className="text-xs text-muted-foreground mt-0.5">Confidence: {confidence}{notes ? ` · ${notes}` : ""}</p>}
+
+      {(f.image_url || f.brand || f.quantity) && (
+        <div className="mt-3 flex gap-3 rounded-2xl bg-muted/50 p-3">
+          {f.image_url ? (
+            <img
+              src={f.image_url}
+              alt={f.name}
+              className="size-20 rounded-xl object-cover bg-background"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+            />
+          ) : null}
+          <div className="min-w-0 flex-1">
+            {f.brand && <p className="text-xs font-medium text-foreground truncate">{f.brand}</p>}
+            {f.quantity && <p className="text-[11px] text-muted-foreground">{f.quantity}</p>}
+            <div className="mt-1 flex flex-wrap gap-1">
+              {f.nutriscore && <Badge label={`Nutri-Score ${f.nutriscore.toUpperCase()}`} tone={scoreTone(f.nutriscore)} />}
+              {typeof f.nova_group === "number" && <Badge label={`NOVA ${f.nova_group}`} tone={f.nova_group >= 4 ? "bad" : f.nova_group >= 3 ? "warn" : "good"} />}
+              {f.ecoscore && <Badge label={`Eco ${f.ecoscore.toUpperCase()}`} tone={scoreTone(f.ecoscore)} />}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {f.per100 && (f.per100.calories > 0 || f.per100.protein > 0) && (
+        <div className="mt-3 rounded-2xl border border-border p-3">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Per 100 g</p>
+          <div className="grid grid-cols-4 gap-2 text-center">
+            <Per label="kcal" v={f.per100.calories} />
+            <Per label="P" v={f.per100.protein} />
+            <Per label="C" v={f.per100.carbs} />
+            <Per label="F" v={f.per100.fat} />
+          </div>
+          {(f.per100.sugars != null || f.per100.fiber != null || f.per100.salt != null || f.per100.saturated_fat != null) && (
+            <div className="mt-2 grid grid-cols-2 gap-1 text-[11px] text-muted-foreground">
+              {f.per100.saturated_fat != null && <span>Sat. fat: <span className="text-foreground tabular-nums">{f.per100.saturated_fat}g</span></span>}
+              {f.per100.sugars != null && <span>Sugars: <span className="text-foreground tabular-nums">{f.per100.sugars}g</span></span>}
+              {f.per100.fiber != null && <span>Fiber: <span className="text-foreground tabular-nums">{f.per100.fiber}g</span></span>}
+              {f.per100.salt != null && <span>Salt: <span className="text-foreground tabular-nums">{f.per100.salt}g</span></span>}
+            </div>
+          )}
+        </div>
+      )}
+
+      {(f.ingredients || f.allergens || f.categories || f.barcode) && (
+        <details className="mt-3 rounded-2xl border border-border p-3 group">
+          <summary className="text-xs font-medium cursor-pointer list-none flex items-center justify-between">
+            More info
+            <span className="text-muted-foreground text-[10px] group-open:hidden">show</span>
+            <span className="text-muted-foreground text-[10px] hidden group-open:inline">hide</span>
+          </summary>
+          <div className="mt-2 space-y-2 text-[11px] leading-relaxed">
+            {f.allergens && <p><span className="text-muted-foreground">Allergens: </span>{f.allergens}</p>}
+            {f.categories && <p className="line-clamp-2"><span className="text-muted-foreground">Category: </span>{f.categories}</p>}
+            {f.ingredients && <p className="line-clamp-6"><span className="text-muted-foreground">Ingredients: </span>{f.ingredients}</p>}
+            {f.barcode && <p className="text-muted-foreground tabular-nums">Barcode: {f.barcode}</p>}
+          </div>
+        </details>
+      )}
+
       <input
         value={f.name}
         onChange={(e) => setF({ ...f, name: e.target.value })}
