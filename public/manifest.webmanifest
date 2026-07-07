@@ -7,6 +7,8 @@
   "background_color": "#0A0F1F",
   "theme_color": "#2F5BFF",
   "icons": [
-    { "src": "/src/assets/caltrack-logo.png", "sizes": "2000x2000", "type": "image/png", "purpose": "any maskable" }
+    { "src": "/favicon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/favicon.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/apple-touch-icon.png", "sizes": "512x512", "type": "image/png" }
   ]
 }
