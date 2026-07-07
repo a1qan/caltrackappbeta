@@ -37,6 +37,16 @@ export interface FoodItem {
   fat: number;
   isCustom?: boolean;
   isFavorite?: boolean;
+  image_url?: string;
+  barcode?: string;
+  ingredients?: string;
+  allergens?: string;
+  categories?: string;
+  quantity?: string;
+  nutriscore?: string;
+  nova_group?: number;
+  ecoscore?: string;
+  per100?: { calories: number; protein: number; carbs: number; fat: number; sugars?: number; fiber?: number; salt?: number; saturated_fat?: number };
 }
 
 export type MealType = "breakfast" | "lunch" | "dinner" | "snack";
