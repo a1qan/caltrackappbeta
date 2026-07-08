@@ -72,7 +72,9 @@ function AuthenticatedLayout() {
 
   return (
     <div className="bg-background min-h-[100svh]">
-      <Outlet />
+      <PageTransition>
+        <Outlet />
+      </PageTransition>
       {!hideNav && <BottomNav />}
     </div>
   );
