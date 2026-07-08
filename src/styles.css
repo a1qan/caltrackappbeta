@@ -159,11 +159,15 @@
   }
 
   html {
+    color-scheme: light;
+  }
+  html.dark {
     color-scheme: dark;
   }
 
   body {
     overscroll-behavior-y: none;
+    transition: background-color 0.35s ease, color 0.35s ease;
   }
 
   /* Smooth micro-interactions everywhere */
