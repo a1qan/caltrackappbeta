@@ -1,10 +1,16 @@
 // Server-only helpers for AI providers.
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 
-/**
- * User's own Google AI Studio key (free tier) — preferred when set.
- * Uses Google's OpenAI-compatible endpoint.
- */
+// A valid Google AI Studio API key starts with "AIza". Anything else (e.g. an
+// OAuth token starting with "AQ.") is rejected by Google with 401 UNAUTHENTICATED,
+// so we treat it as absent and transparently fall back to Lovable AI.
+function validGeminiKey(): string | null {
+  const k = process.env.GEMINI_API_KEY?.trim();
+  if (!k) return null;
+  if (!k.startsWith("AIza")) return null;
+  return k;
+}
+
 export function createGeminiProvider(apiKey: string) {
   return createOpenAICompatible({
     name: "google-ai-studio",
@@ -13,7 +19,6 @@ export function createGeminiProvider(apiKey: string) {
   });
 }
 
-/** Lovable AI Gateway — fallback when no GEMINI_API_KEY is configured. */
 export function createLovableAiGatewayProvider(apiKey: string) {
   return createOpenAICompatible({
     name: "lovable",
@@ -22,11 +27,10 @@ export function createLovableAiGatewayProvider(apiKey: string) {
   });
 }
 
-/** Resolve raw chat-completions endpoint config (for non-AI-SDK fetch calls). */
 export function resolveChatEndpoint():
   | { url: string; headers: Record<string, string>; model: string }
   | null {
-  const gemKey = process.env.GEMINI_API_KEY;
+  const gemKey = validGeminiKey();
   if (gemKey) {
     return {
       url: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
@@ -39,17 +43,16 @@ export function resolveChatEndpoint():
     return {
       url: "https://ai.gateway.lovable.dev/v1/chat/completions",
       headers: { "Lovable-API-Key": lovKey },
-      model: "google/gemini-3-flash-preview",
+      model: "google/gemini-2.5-flash",
     };
   }
   return null;
 }
 
-/** Resolve an AI SDK model: user's Gemini key first, Lovable AI as fallback. */
 export function resolveChatModel() {
-  const gemKey = process.env.GEMINI_API_KEY;
+  const gemKey = validGeminiKey();
   if (gemKey) return createGeminiProvider(gemKey)("gemini-2.5-flash");
   const lovKey = process.env.LOVABLE_API_KEY;
-  if (lovKey) return createLovableAiGatewayProvider(lovKey)("google/gemini-3-flash-preview");
+  if (lovKey) return createLovableAiGatewayProvider(lovKey)("google/gemini-2.5-flash");
   return null;
 }
