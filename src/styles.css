@@ -59,9 +59,51 @@
   --shadow-glow: 0 1px 2px rgb(0 0 0 / 0.18);
 }
 
-/* Midnight Focus — dark-first, flat, single blue accent */
+/* Daylight — light theme, flat, single blue accent (DEFAULT) */
 :root {
   --radius: 1rem;
+  --background: #ffffff;
+  --foreground: #0a0f1e;
+  --card: #f7f9fc;
+  --card-foreground: #0a0f1e;
+  --popover: #ffffff;
+  --popover-foreground: #0a0f1e;
+
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --primary-glow: #3b82f6;
+
+  --secondary: #eef2f8;
+  --secondary-foreground: #0a0f1e;
+  --muted: #f1f4f9;
+  --muted-foreground: #64748b;
+  --accent: #eef2f8;
+  --accent-foreground: #0a0f1e;
+
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --success: #059669;
+  --success-foreground: #ffffff;
+  --warning: #d97706;
+  --warning-foreground: #ffffff;
+
+  --border: rgb(10 15 30 / 0.09);
+  --input: rgb(10 15 30 / 0.12);
+  --ring: #2563eb;
+
+  --protein: #2563eb;
+  --carbs: #60a5fa;
+  --fat: #94a3b8;
+
+  --chart-1: #2563eb;
+  --chart-2: #60a5fa;
+  --chart-3: #93c5fd;
+  --chart-4: #94a3b8;
+  --chart-5: #059669;
+}
+
+/* Midnight Focus — dark theme */
+.dark {
   --background: #0a0f1e;
   --foreground: #e8edf3;
   --card: #141b2e;
