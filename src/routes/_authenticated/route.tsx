@@ -4,6 +4,7 @@ import { useCallback, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { fetchProfile } from "@/lib/profile-api";
 import { BottomNav } from "@/components/bottom-nav";
+import { PageTransition } from "@/components/page-transition";
 import { useTracking } from "@/lib/store";
 import { useNotificationScheduler } from "@/lib/notifications";
 import { todayStr } from "@/lib/calculations";
@@ -72,7 +73,9 @@ function AuthenticatedLayout() {
 
   return (
     <div className="bg-background min-h-[100svh]">
-      <Outlet />
+      <PageTransition>
+        <Outlet />
+      </PageTransition>
       {!hideNav && <BottomNav />}
     </div>
   );

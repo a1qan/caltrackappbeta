@@ -2,10 +2,11 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Award, Bell, ChevronRight, LogOut, Shield, Target, Trash2, User } from "lucide-react";
+import { Award, Bell, ChevronRight, LogOut, Moon, Shield, Sun, Target, Trash2, User } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { fetchProfile, upsertProfile } from "@/lib/profile-api";
 import { calcTargets } from "@/lib/calculations";
+import { useTheme } from "@/lib/theme";
 import { PageHeader } from "@/components/mobile-shell";
 
 export const Route = createFileRoute("/_authenticated/settings")({
@@ -16,6 +17,7 @@ function SettingsPage() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const { theme, toggle: toggleTheme } = useTheme();
   const profileQ = useQuery({
     queryKey: ["profile", user?.id],
     queryFn: () => fetchProfile(user!.id),
@@ -68,6 +70,12 @@ function SettingsPage() {
             value="Reminders, hydration, weigh-in & more"
           />
         </Link>
+        <Row
+          icon={theme === "dark" ? <Moon className="size-4" /> : <Sun className="size-4" />}
+          label="Appearance"
+          value={theme === "dark" ? "Dark mode" : "Light mode"}
+          onClick={toggleTheme}
+        />
 
       </section>
 
