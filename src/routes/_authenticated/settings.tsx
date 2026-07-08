@@ -70,6 +70,12 @@ function SettingsPage() {
             value="Reminders, hydration, weigh-in & more"
           />
         </Link>
+        <Row
+          icon={theme === "dark" ? <Moon className="size-4" /> : <Sun className="size-4" />}
+          label="Appearance"
+          value={theme === "dark" ? "Dark mode" : "Light mode"}
+          onClick={toggleTheme}
+        />
 
       </section>
 
