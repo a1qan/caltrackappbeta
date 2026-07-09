@@ -3,15 +3,28 @@ import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 
 /**
  * Returns a valid Google AI Studio API key.
- * Supports both legacy AIza... keys and the newer AQ... keys.
+ * Google AI Studio API keys start with AIza. AQ.* values are OAuth tokens
+ * and the Gemini API rejects them as unauthorized.
  */
 function validGeminiKey(): string | null {
   const key = process.env.GEMINI_API_KEY?.trim();
 
   if (!key) return null;
 
-  if (key.startsWith("AIza") || key.startsWith("AQ.")) {
+  if (key.startsWith("AIza")) {
     return key;
+  }
+
+  return null;
+}
+
+export function getAiConfigurationIssue(): string | null {
+  const geminiKey = process.env.GEMINI_API_KEY?.trim();
+
+  if (geminiKey && !geminiKey.startsWith("AIza")) {
+    return geminiKey.startsWith("AQ.")
+      ? "The saved GEMINI_API_KEY is an OAuth token, not a Google AI Studio API key. Replace it with an API key from Google AI Studio; it should start with AIza."
+      : "The saved GEMINI_API_KEY is not a Google AI Studio API key. Replace it with an API key that starts with AIza.";
   }
 
   return null;
@@ -42,6 +55,9 @@ export function resolveChatEndpoint():
       model: string;
     }
   | null {
+  const configurationIssue = getAiConfigurationIssue();
+  if (configurationIssue) return null;
+
   const geminiKey = validGeminiKey();
 
   if (geminiKey) {
@@ -70,6 +86,9 @@ export function resolveChatEndpoint():
 }
 
 export function resolveChatModel() {
+  const configurationIssue = getAiConfigurationIssue();
+  if (configurationIssue) return null;
+
   const geminiKey = validGeminiKey();
 
   if (geminiKey) {

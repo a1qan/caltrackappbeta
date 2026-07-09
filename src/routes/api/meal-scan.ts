@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { resolveChatEndpoint } from "@/lib/ai-gateway.server";
+import { getAiConfigurationIssue, resolveChatEndpoint } from "@/lib/ai-gateway.server";
 
 type Body = { imageDataUrl?: string; note?: string };
 
@@ -11,8 +11,18 @@ export const Route = createFileRoute("/api/meal-scan")({
         if (!body.imageDataUrl) {
           return Response.json({ error: "imageDataUrl required" }, { status: 400 });
         }
+        const configurationIssue = getAiConfigurationIssue();
+        if (configurationIssue) {
+          return Response.json({ error: configurationIssue }, { status: 503 });
+        }
+
         const endpoint = resolveChatEndpoint();
-        if (!endpoint) return Response.json({ error: "No AI provider configured" }, { status: 500 });
+        if (!endpoint) {
+          return Response.json(
+            { error: "No AI provider configured. Add a valid GEMINI_API_KEY from Google AI Studio." },
+            { status: 503 },
+          );
+        }
 
         const prompt = `You are a nutrition vision assistant. Look at the image of a meal and ESTIMATE the contents. ${
           body.note ? `User note: ${body.note}. ` : ""

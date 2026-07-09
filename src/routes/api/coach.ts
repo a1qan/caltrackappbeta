@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { convertToModelMessages, streamText, type UIMessage } from "ai";
-import { resolveChatModel } from "@/lib/ai-gateway.server";
+import { getAiConfigurationIssue, resolveChatModel } from "@/lib/ai-gateway.server";
 
 type Body = {
   messages?: unknown;
@@ -29,8 +29,18 @@ export const Route = createFileRoute("/api/coach")({
         if (!Array.isArray(body.messages)) {
           return new Response("messages required", { status: 400 });
         }
+        const configurationIssue = getAiConfigurationIssue();
+        if (configurationIssue) {
+          return new Response(configurationIssue, { status: 503 });
+        }
+
         const model = resolveChatModel();
-        if (!model) return new Response("No AI provider configured", { status: 500 });
+        if (!model) {
+          return new Response(
+            "No AI provider configured. Add a valid GEMINI_API_KEY from Google AI Studio.",
+            { status: 503 },
+          );
+        }
 
         const p = body.profile;
         const s = body.todaySummary;
@@ -60,6 +70,10 @@ export const Route = createFileRoute("/api/coach")({
           originalMessages: body.messages as UIMessage[],
           onError: (error) => {
             console.error("[coach stream response error]", error);
+            const message = error instanceof Error ? error.message : "AI request failed";
+            if (/unauthori[sz]ed|401|api key|credential/i.test(message)) {
+              return "The AI provider rejected the saved key. Replace GEMINI_API_KEY with a Google AI Studio key that starts with AIza.";
+            }
             return error instanceof Error ? error.message : "AI request failed";
           },
         });
