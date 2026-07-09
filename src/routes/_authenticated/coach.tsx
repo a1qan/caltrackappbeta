@@ -23,6 +23,15 @@ const SUGGESTIONS = [
   "Why am I not making progress?",
 ];
 
+function friendlyCoachError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error || "");
+  if (/AI Studio|AIza|GEMINI_API_KEY|OAuth token/i.test(message)) return message;
+  if (/unauthori[sz]ed|401|api key|credential/i.test(message)) {
+    return "The AI provider rejected the saved key. Replace GEMINI_API_KEY with a Google AI Studio key that starts with AIza.";
+  }
+  return message || "CalCoach failed to respond. Check your connection and try again.";
+}
+
 function CoachPage() {
   const { user } = useAuth();
   const profileQ = useQuery({
@@ -76,13 +85,17 @@ function CoachPage() {
     [profileQ.data, totals, workoutsToday, streak],
   );
 
+  const [coachError, setCoachError] = useState<string | null>(null);
+
   const { messages, sendMessage, status } = useChat({
     id: "coach",
     messages: initialMessages,
     transport,
     onError: (err) => {
       console.error("[coach]", err);
-      toast.error(err?.message || "CalCoach failed to respond. Check your connection and try again.");
+      const message = friendlyCoachError(err);
+      setCoachError(message);
+      toast.error(message);
     },
   });
 
@@ -115,6 +128,7 @@ function CoachPage() {
   function submit(text?: string) {
     const t = (text ?? input).trim();
     if (!t || busy) return;
+    setCoachError(null);
     sendMessage({ text: t });
     setInput("");
     requestAnimationFrame(() => taRef.current?.focus());
@@ -179,6 +193,14 @@ function CoachPage() {
         )}
         <div ref={endRef} />
       </div>
+
+      {coachError ? (
+        <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+154px)] inset-x-0 z-30 px-4 pointer-events-none">
+          <div className="mx-auto max-w-md rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive shadow-elevated">
+            {coachError}
+          </div>
+        </div>
+      ) : null}
 
       <form
         onSubmit={(e) => { e.preventDefault(); submit(); }}
